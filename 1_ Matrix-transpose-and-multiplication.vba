@@ -11,16 +11,19 @@ Sub 四角形角を丸くする3_Click()
 Dim B, Bt
 B = read_matrix_from_sheet(6, 2, 3, 6)
 Bt = matrix_t(B)
+
 Dim x As Integer
 For x = 11 To 16
-Sheets("Sheet1").Range("B" & x, "D" & x) = Bt(x - 11)
+    Sheets("Sheet1").Range("B" & x, "D" & x) = Bt(x - 11)
 Next x
+
 Dim D, BtDB As Variant
 D = read_matrix_from_sheet(6, 9, 3, 3)
 BtDB = matrix_cross(matrix_cross(Bt, D), B)
+
 Dim y As Integer
 For y = 11 To 16
-Sheets("Sheet1").Range("F" & y, "K" & y) = BtDB(y - 11)
+    Sheets("Sheet1").Range("F" & y, "K" & y) = BtDB(y - 11)
 Next y
 End Sub
 
@@ -60,6 +63,7 @@ Function create_matrix(row_size, col_size)
     Next i
     create_matrix = ans
 End Function
+
 ' 行列同士の掛け算
 Function matrix_cross(m1, m2)
   ans = create_matrix(UBound(m1) + 1, UBound(m2(0)) + 1)
