@@ -43,14 +43,14 @@ End Function
 
 ' transpose matrix
 Function matrix_t(m)
-            ans = create_matrix(UBound(m(0)) + 1, UBound(m) + 1)
-            For i = 0 To UBound(m(0))
-            For j = 0 To UBound(m)
+    ans = create_matrix(UBound(m(0)) + 1, UBound(m) + 1)
+    For i = 0 To UBound(m(0))
+        For j = 0 To UBound(m)
             ans(i)(j) = m(j)(i)
-            Next j
-            Next i
-            matrix_t = ans
-            End Function
+        Next j
+    Next i
+    matrix_t = ans
+End Function
 
 
 ' Create a matrix of arbitrary size (jug array)
