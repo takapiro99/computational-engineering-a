@@ -2,6 +2,7 @@ Sub reset_area()
     MsgBox ("reset!")
 End Sub
 
+' main
 Sub solve_simultaneous_equation()
     Dim A
     A = read_matrix_from_sheet(2, 1, 6, 7)
