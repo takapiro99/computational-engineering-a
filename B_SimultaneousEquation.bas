@@ -8,7 +8,7 @@ Sub solve_simultaneous_equation()
     A = read_matrix_from_sheet(2, 1, 6, 7)
     Call forward_elimination(A)
     Call backward_substitution(A)
-    'Call print_array(A, "done")
+    ' Call print_array(A, "done")
     ' get answer
     Dim ans As Variant
     ans = Array()
