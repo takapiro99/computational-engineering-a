@@ -10,7 +10,7 @@ Sub calculate()
     p = Cells(7, 2)
     k_ = create_matrix(2, Nodes - 1)             ' kを集めたもの
     For i = 0 To UBound(k_(0))
-        ' それぞれのk
+    ' それぞれのk (AE/L)
         k_(0)(i) = (((H0 - (L_ * i / L * (H0 - H1))) + (H0 - ((L_ * (i + 1)) / L * (H0 - H1)))) / 2) * E / L_
     Next i
 
@@ -30,11 +30,11 @@ Sub calculate()
         main(i + 1)(i) = main(i + 1)(i) - k_(0)(i + 1)
         main(i + 1)(i + 1) = main(i + 1)(i + 1) + k_(0)(i + 1)
     Next i
-    print_array (k_)
-    print_array (main)
+    'print_array (k_)
+    'print_array (main)
     Call forward_elimination(main)
     Call backward_substitution(main)
-    print_array (main)
+    'print_array (main)
     Dim ans As Variant
     ans = Array()
     ReDim ans(UBound(main))
