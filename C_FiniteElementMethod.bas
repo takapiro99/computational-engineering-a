@@ -8,20 +8,18 @@ Sub calculate()
     L = Cells(6, 2)
     L_ = L / (Nodes - 1)                         ' 各要素の幅
     p = Cells(7, 2)
-    
     k_ = create_matrix(2, Nodes - 1)             ' kを集めたもの
     For i = 0 To UBound(k_(0))
-        ' それぞれのkに代入
         k_(0)(i) = (((H0 - (L_ * i / L * (H0 - H1))) + (H0 - ((L_ * (i + 1)) / L * (H0 - H1)))) / 2) * B * E / L_
     Next i
-    
-    main = create_matrix(6, 7)                   ' 全部入り係数行列
+    main = create_matrix(Nodes, Nodes + 1)       ' 全部入り係数行列
     ' ゼロ埋め
     For i = 0 To UBound(main)
         For j = 0 To UBound(main(0))
             main(i)(j) = 0
         Next j
     Next i
+    ' Pを代入
     main(5)(6) = p
     ' いろいろ代入
     For i = 0 To UBound(k_(0))
@@ -30,24 +28,15 @@ Sub calculate()
         main(i + 1)(i) = main(i + 1)(i) - k_(0)(i)
         main(i + 1)(i + 1) = main(i + 1)(i + 1) + k_(0)(i)
     Next i
-    Call print_array(main, "けいすう")
     key = main(0)(1)
     compressed = shrink_array(main, 0, 0)
-    Call print_array(compressed, "compressed")
     Call forward_elimination(compressed)
     Call backward_substitution(compressed)
-    print_array (compressed)
-    
-    Dim ans As Variant
-    ans = Array()
-    ReDim ans(UBound(compressed))
+
     For i = 0 To UBound(compressed)
-        ans(i) = Round(compressed(i)(UBound(compressed(0))), 6)
+        Cells(3 + i, 7) = Round(compressed(i)(UBound(compressed(0))), 6)
     Next i
-    For i = 0 To UBound(ans)
-        Cells(3 + i, 7) = ans(i)
-    Next i
-    ' ずるいかも
+
     Cells(7, 6) = p
     Cells(2, 6) = key * compressed(0)(UBound(compressed(0)))
 End Sub
@@ -60,31 +49,23 @@ End Sub
 
 Sub forward_elimination(arr)
     For i = 0 To UBound(arr)
-        Dim key
         key = arr(i)(i)
-        'print_array (arr)
         For j = 0 To UBound(arr(0)) - i
             ' divide each element with key
             arr(i)(j + i) = arr(i)(j + i) / key
         Next j
-        
-        ' substitute downward each row
         For k = i + 1 To UBound(arr)
-            Dim num
             num = arr(k)(i)
             For L = i To UBound(arr(0))
                 arr(k)(L) = arr(k)(L) - arr(i)(L) * num
             Next L
         Next k
-        
     Next i
 End Sub
 
 Sub backward_substitution(arr)
     For i = UBound(arr) To 1 Step -1
-        ' substitute upward each row
         For j = i To 1 Step -1
-            Dim key
             key = arr(j - 1)(i)
             For k = UBound(arr(0)) To i Step -1
                 arr(j - 1)(k) = arr(j - 1)(k) - arr(i)(k) * key
@@ -110,7 +91,6 @@ End Function
 Sub print_array(arr, Optional msg As String)
     Debug.Print ("--")
     For i = 0 To UBound(arr)
-        Dim tmp
         tmp = ""
         For j = 0 To UBound(arr(0))
             tmp = tmp & arr(i)(j) & "  "
@@ -120,19 +100,17 @@ Sub print_array(arr, Optional msg As String)
     Debug.Print ("--- " & Now & " " & msg & " ---")
 End Sub
 
-Function shrink_array(arr, Optional row As Integer = -1, Optional col As Integer = -1)
+Function shrink_array(arr_, Optional row As Integer = -1, Optional col As Integer = -1)
+    arr = arr_
     new_array_row = UBound(arr)
     new_array_col = UBound(arr(0))
-    'row詰める
+    ' row詰める
     If row >= 0 Then
         new_array_row = new_array_row - 1
         For i = 0 To UBound(arr(0))
             For j = row To UBound(arr) - 1
                 arr(j)(i) = arr(j + 1)(i)
             Next j
-        Next i
-        For i = 0 To UBound(arr(0))
-            arr(UBound(arr))(i) = ""
         Next i
     End If
     ' col 詰める
@@ -142,9 +120,6 @@ Function shrink_array(arr, Optional row As Integer = -1, Optional col As Integer
             For j = col To UBound(arr(0)) - 1
                 arr(i)(j) = arr(i)(j + 1)
             Next j
-        Next i
-        For i = 0 To UBound(arr)
-            arr(i)(UBound(arr(0))) = ""
         Next i
     End If
     new_array = create_matrix(new_array_row + 1, new_array_col + 1)
