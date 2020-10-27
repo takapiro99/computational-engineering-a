@@ -24,7 +24,6 @@ Sub calculate()
     Next i
     main(5)(6) = p
     ' いろいろ代入
-    print_array (main)
     For i = 0 To UBound(k_(0))
         main(i)(i) = main(i)(i) + k_(0)(i)
         main(i)(i + 1) = main(i)(i + 1) - k_(0)(i)
@@ -32,9 +31,9 @@ Sub calculate()
         main(i + 1)(i + 1) = main(i + 1)(i + 1) + k_(0)(i)
     Next i
     Call print_array(main, "けいすう")
+    key = main(0)(1)
     compressed = shrink_array(main, 0, 0)
     Call print_array(compressed, "compressed")
-    'Exit Sub
     Call forward_elimination(compressed)
     Call backward_substitution(compressed)
     print_array (compressed)
@@ -50,7 +49,7 @@ Sub calculate()
     Next i
     ' ずるいかも
     Cells(7, 6) = p
-    Cells(2, 6) = -p
+    Cells(2, 6) = key * compressed(0)(UBound(compressed(0)))
 End Sub
 
 Sub reset_area()
@@ -148,7 +147,6 @@ Function shrink_array(arr, Optional row As Integer = -1, Optional col As Integer
             arr(i)(UBound(arr(0))) = ""
         Next i
     End If
-    'shrink_array = arr
     new_array = create_matrix(new_array_row + 1, new_array_col + 1)
     For i = 0 To new_array_row
         For j = 0 To new_array_col
