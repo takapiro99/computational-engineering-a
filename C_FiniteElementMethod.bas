@@ -8,25 +8,20 @@ Sub calculate()
     L = Cells(6, 2)
     L_ = L / (Nodes - 1)                         ' 各要素の幅
     p = Cells(7, 2)
-    k_ = create_matrix(2, Nodes - 1)             ' kを集めたもの
-    For i = 0 To UBound(k_(0))
-        k_(0)(i) = (((H0 - (L_ * i / L * (H0 - H1))) + (H0 - ((L_ * (i + 1)) / L * (H0 - H1)))) / 2) * B * E / L_
+    Dim k_
+    ReDim k_(Nodes - 1)
+    For i = 0 To UBound(k_)
+        k_(i) = (((H0 - (L_ * i / L * (H0 - H1))) + (H0 - ((L_ * (i + 1)) / L * (H0 - H1)))) / 2) * B * E / L_
     Next i
-    main = create_matrix(Nodes, Nodes + 1)       ' 全部入り係数行列
-    ' ゼロ埋め
-    For i = 0 To UBound(main)
-        For j = 0 To UBound(main(0))
-            main(i)(j) = 0
-        Next j
-    Next i
+    main = create_matrix(Nodes, Nodes + 1, 0)    ' 全部入り係数行列
     ' Pを代入
     main(5)(6) = p
     ' いろいろ代入
-    For i = 0 To UBound(k_(0))
-        main(i)(i) = main(i)(i) + k_(0)(i)
-        main(i)(i + 1) = main(i)(i + 1) - k_(0)(i)
-        main(i + 1)(i) = main(i + 1)(i) - k_(0)(i)
-        main(i + 1)(i + 1) = main(i + 1)(i + 1) + k_(0)(i)
+    For i = 0 To UBound(k_) - 1
+        main(i)(i) = main(i)(i) + k_(i)
+        main(i)(i + 1) = main(i)(i + 1) - k_(i)
+        main(i + 1)(i) = main(i + 1)(i) - k_(i)
+        main(i + 1)(i + 1) = main(i + 1)(i + 1) + k_(i)
     Next i
     key = main(0)(1)
     compressed = shrink_array(main, 0, 0)
@@ -75,13 +70,16 @@ Sub backward_substitution(arr)
 End Sub
 
 ' Create a matrix of arbitrary size (jug array)
-Function create_matrix(row_size, col_size)
+Function create_matrix(row_size, col_size, Optional initial = "")
     Dim ans, row As Variant
     ans = Array()
     ReDim ans(row_size - 1)
     For i = 0 To row_size - 1
         row = Array()                            ' new array Instance
         ReDim row(col_size - 1)
+        For j = 0 To col_size - 1
+            row(j) = initial
+        Next j
         ans(i) = row
     Next i
     create_matrix = ans
