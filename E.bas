@@ -29,6 +29,7 @@ Sub calculate()
     For i = 0 To UBound(main)
         main(i)(UBound(main(0))) = Cells(2 + i, 11)
     Next i
+        
     Dim k_() As Variant
     ReDim k_(4)                                  ' magic number
     ' それぞれのkを作ります
@@ -74,11 +75,12 @@ Sub calculate()
     ' debug
     For i = 0 To UBound(main)
         For j = 0 To UBound(main(0))
-            ' Cells(j + 20)(i + 20) = main(i)(j)
+            'Cells(j + 20)(i + 20) = main(i)(j)
         Next j
     Next i
 
     Call print_array(main, "hello")
+    big = shrink_array(main)
     ' 掃きだします
     main = shrink_array(shrink_array(shrink_array(main, 6, 6), 3, 3), 0, 0)
     Call forward_elimination(main)
@@ -86,9 +88,31 @@ Sub calculate()
     Call print_array(main, "last")
     For i = 0 To UBound(main)
         For j = 0 To UBound(main(0))
-            ' Cells(j + 20)(i + 34) = main(i)(j)
+            'Cells(j + 20)(i + 34) = main(i)(j)
         Next j
     Next i
+    Cells(2, 12) = 0
+    Cells(3, 12) = main(0)(9)
+    Cells(4, 12) = main(1)(9)
+    Cells(5, 12) = 0
+    Cells(6, 12) = main(2)(9)
+    Cells(7, 12) = main(3)(9)
+    Cells(8, 12) = 0
+    Cells(9, 12) = main(4)(9)
+    Cells(10, 12) = main(5)(9)
+    Cells(11, 12) = main(6)(9)
+    Cells(12, 12) = main(7)(9)
+    Cells(13, 12) = main(8)(9)
+    For i = 0 To 11
+      Dim num
+      num = 0
+      For j = 0 To 11
+        num = num + big(i)(j) * Cells(2 + j, 12)
+      Next j
+      Debug.Print (Round(num, 3))
+      Cells(2 + i, 13) = Round(num, 3)
+    Next i
+    
 End Sub
 
 ' Create a matrix of arbitrary size (jug array)
