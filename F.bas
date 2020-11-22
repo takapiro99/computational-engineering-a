@@ -1,90 +1,102 @@
-' WIP
-
 Sub calculate()
-    'Debug.Print ("hello")
     Worksheets("Sheet1").Activate
     E = Cells(7, 2)
-    nu = Cells(8, 2)
+    nu = Cells(8, 2) ' 使うの？
     r = Cells(9, 2)
     Nodes = 4
     main = create_matrix(Nodes * 2, Nodes * 2 + 1, 0)
     For i = 0 To 7
-      main(i)(UBound(main(0))) = Cells(2 + i, 11)
+        main(i)(UBound(main(0))) = Cells(2 + i, 11)
     Next i
-    print_array (main)
+    ' print_array (main)
     Dim cordinates(3)
     For i = 0 To 3
-      cordinates(i) = Array(Cells(2 + i, 2), Cells(2 + i, 3))
+        cordinates(i) = Array(Cells(2 + i, 2), Cells(2 + i, 3))
     Next i
     ' sections = Array(Array(1, 2), Array(3, 4), Array(2, 4), Array(2, 3))
-    sections = Array(Array(1, 2), Array(3, 4), Array(2, 4), Array(3, 2))
+    sections = Array(Array(1, 2), Array(3, 4), Array(2, 4), Array(3, 2)) ' sinの正負
     Dim k_(3) As Variant
-    For i = 0 To 3 ' create k
-      k_(i) = k_factory(cordinates(sections(i)(0) - 1), cordinates(sections(i)(1) - 1), E, nu, r)
+    For i = 0 To 3                               ' create k
+        k_(i) = k_factory(cordinates(sections(i)(0) - 1), cordinates(sections(i)(1) - 1), E, r)
+        ' Call print_array(k_(i), i & "番目")
     Next i
-    ' k 代入していく
-    yoko = 4
-    step_ = 2
+    ' k 代入していく、今回はuとv分かれてなくてu1v1u2v2って並んでるから詰まった
+    yoko = 1
+    step_ = 1
     For i = 0 To 3
-      For j = 0 To 1
-        For k = 0 To 1
-                row = sections(i)(j) - 1
-                col = sections(i)(k) - 1
+        For j = 0 To 1
+            For k = 0 To 1
+                row = (sections(i)(j) - 1) * 2
+                col = (sections(i)(k) - 1) * 2
                 ' MsgBox (row & "   " & col)
-                main(row)(col) = main(row)(col) + k_(i)(j)(k)
-                main(row + yoko)(col) = main(row + yoko)(col) + k_(i)(j + step_)(k)
-                main(row)(col + yoko) = main(row)(col + yoko) + k_(i)(j)(k + step_)
-                main(row + yoko)(col + yoko) = main(row + yoko)(col + yoko) + k_(i)(j + step_)(k + step_)
-        Next k
-      Next j
+                main(row)(col) = main(row)(col) + k_(i)(2 * j)(2 * k)
+                main(row + yoko)(col) = main(row + yoko)(col) + k_(i)(2 * j + step_)(2 * k)
+                main(row)(col + yoko) = main(row)(col + yoko) + k_(i)(2 * j)(2 * k + step_)
+                main(row + yoko)(col + yoko) = main(row + yoko)(col + yoko) + k_(i)(2 * j + step_)(2 * k + step_)
+            Next k
+        Next j
     Next i
     ' はきだす
-    print_array (main)
-    big = shrink_array(main) ' just deep copy
-    main = shrink_array(shrink_array(shrink_array(shrink_array(main, Cells(5, 9) - 1, Cells(5, 9) - 1), Cells(4, 9) - 1, Cells(4, 9) - 1), Cells(3, 9) - 1, Cells(3, 9) - 1), Cells(2, 9) - 1, Cells(2, 9) - 1)
-    'Call forward_elimination(main)
+    big = shrink_array(main)                     ' just deep copy
+    f = Array(Cells(5, 9) - 1, Cells(4, 9) - 1, Cells(3, 9) - 1, Cells(2, 9) - 1)
+    ' Call print_array(main, "掃き出前")
+    main = shrink_array(shrink_array(shrink_array(shrink_array(main, f(0), f(0)), f(1), f(1)), f(2), f(2)), f(3), f(3))
+    ' Call print_array(main, "ぎゅっとした後掃き出前")
+    Call forward_elimination(main)
+    Call backward_substitution(main)
+    ' Call print_array(main, "掃き出し後")
     ' F_output出す
-    print_array (main)
-    ' print_array (k_template_factory(0.5, 0.2))
+    Cells(2, 12) = 0
+    Cells(3, 12) = 0
+    Cells(4, 12) = main(0)(UBound(main(0)))
+    Cells(5, 12) = main(1)(UBound(main(0)))
+    Cells(6, 12) = 0
+    Cells(7, 12) = 0
+    Cells(8, 12) = main(2)(UBound(main(0)))
+    Cells(9, 12) = main(3)(UBound(main(0)))
+    For i = 0 To 7
+      num = 0
+      For j = 0 To 7
+        num = num + big(i)(j) * Cells(2 + j, 12)
+      Next j
+      Cells(2 + i, 13) = Round(num, 3)
+    Next i
 End Sub
 
-Function k_factory(first, second, E, nu, r)      ' takes 2 cordinates
+Function k_factory(first, second, E, r)      ' takes 2 cordinates
     diagonal = Sqr((second(0) - first(0)) ^ 2 + (second(1) - first(1)) ^ 2)
     cos_ = (second(0) - first(0)) / diagonal
     sin_ = (second(1) - first(1)) / diagonal
-    ' if 2, 3 : then sin_ *= -1
-    ' MsgBox (Round(cos_, 5) & "    " & Round(sin_, 5))
+    ' MsgBox (Round(sin_, 5) & "    " & Round(cos_, 5))
     new_k = k_template_factory(sin_, cos_)
-    Dim pi As Double
     pi = 4 * Atn(1)
     new_k = multiply_each(new_k, E * pi * r ^ 2 / diagonal) ' multiply by ea/l
-    print_array (new_k)
+    'print_array (new_k)
     k_factory = new_k
 End Function
 
 Function k_template_factory(sin_, cos_)
-  k = create_matrix(4, 4, 0)
-  k(0)(0) = cos_ ^ 2
-  k(0)(1) = cos_ * sin_
-  k(0)(2) = -1 * cos_ ^ 2
-  k(0)(3) = -1 * cos_ * sin_
-  k(1)(0) = cos_ * sin_
-  k(1)(1) = sin_ ^ 2
-  k(1)(2) = -1 * cos_ * sin_
-  k(1)(3) = -1 * sin_ ^ 2
-  k(2)(0) = -1 * cos_ ^ 2
-  k(2)(1) = -1 * cos_ * sin_
-  k(2)(2) = cos_ ^ 2
-  k(2)(3) = cos_ * sin_
-  k(3)(0) = -1 * cos_ * sin_
-  k(3)(1) = -1 * sin_ ^ 2
-  k(3)(2) = cos_ * sin_
-  k(3)(3) = sin_ ^ 2
-  k_template_factory = k
+    k = create_matrix(4, 4, 0)
+    k(0)(0) = cos_ ^ 2
+    k(0)(1) = cos_ * sin_
+    k(0)(2) = -1 * cos_ ^ 2
+    k(0)(3) = -1 * cos_ * sin_
+    k(1)(0) = cos_ * sin_
+    k(1)(1) = sin_ ^ 2
+    k(1)(2) = -1 * cos_ * sin_
+    k(1)(3) = -1 * sin_ ^ 2
+    k(2)(0) = -1 * cos_ ^ 2
+    k(2)(1) = -1 * cos_ * sin_
+    k(2)(2) = cos_ ^ 2
+    k(2)(3) = cos_ * sin_
+    k(3)(0) = -1 * cos_ * sin_
+    k(3)(1) = -1 * sin_ ^ 2
+    k(3)(2) = cos_ * sin_
+    k(3)(3) = sin_ ^ 2
+    k_template_factory = k
 End Function
 
-
-Function shrink_array(arr_, Optional row As Integer = -1, Optional col As Integer = -1)
+Function shrink_array(arr_, Optional row = -1, Optional col = -1)
     arr = arr_
     new_array_row = UBound(arr)
     new_array_col = UBound(arr(0))
@@ -147,7 +159,7 @@ Sub print_array(arr, Optional msg As String)
         tmp = ""
         For j = 0 To UBound(arr(0))
             'tmp = tmp & arr(i)(j) & "  "
-            tmp = tmp & Round(arr(i)(j), 2) & "  "
+            tmp = tmp & Round(arr(i)(j), 4) & "  "
         Next j
         Debug.Print (tmp)
     Next i
@@ -157,9 +169,7 @@ End Sub
 Sub forward_elimination(arr)
     For i = 0 To UBound(arr)
         Key = arr(i)(i)
-        print_array (arr)
         For j = 0 To UBound(arr(0)) - i
-        
             ' divide each element with key
             arr(i)(j + i) = arr(i)(j + i) / Key
         Next j
@@ -170,8 +180,6 @@ Sub forward_elimination(arr)
             Next L
         Next k
     Next i
-    'print_array (arr)
-    Debug.Print ("hi")
 End Sub
 
 Sub backward_substitution(arr)
